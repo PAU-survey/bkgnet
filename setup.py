@@ -14,7 +14,7 @@ setup(
     keywords = "astronomy",
     url = "https://gitlab.pic.es/pau/bkgnet",
     license="GPLv3",
-    packages=['an_example_pypi_project'],
+    packages=['torch', 'numpy', 'pandas'],
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
