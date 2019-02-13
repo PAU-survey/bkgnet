@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 
-import network
+from . import network
 
 class BKGnet:
     """Interface for background prection using neural networks."""
