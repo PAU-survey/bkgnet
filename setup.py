@@ -5,6 +5,9 @@ from setuptools import setup
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+# This requires PyTorch, which can not be automatically be installed
+# using pip.
+
 setup(
     name = "bkgnet",
     version = "0.1.0",
@@ -14,7 +17,8 @@ setup(
     keywords = "astronomy",
     url = "https://gitlab.pic.es/pau/bkgnet",
     license="GPLv3",
-    packages=['torch', 'numpy', 'pandas'],
+    packages=['bkgnet'],
+    install_requires=['numpy', 'pandas'],
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
