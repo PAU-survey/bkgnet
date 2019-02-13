@@ -48,7 +48,6 @@ class BKGnet:
             postage = img_pad[sub.x:sub.x+120, sub.y:sub.y+120].copy()
             postage = postage.astype(np.float32, copy = False)
             postage[60-8:60 + 8, 60-8:60+8] = np.nan
-            #print(postage[60-8:60 + 8, 60-8:60+8])
             postages[i] = postage
 
             S = pd.Series()
@@ -90,27 +89,18 @@ class BKGnet:
             flat = bstamp.view(len(bstamp), -1)
             mean = torch.tensor(np.nanmean(flat, 1))
             std = torch.tensor(np.nanstd(flat, 1))
-            #print('bstamp', bstamp.shape)
 
             bstamp = (bstamp - mean[:, None, None]) / \
                      std[:, None, None]
             
-            #print(bstamp[0], mean[0])
             # Removing the central region, as done in the training.
             bstamp[:, 60-8:60+8, 60-8:60+8] = 0
-            #print('here', bstamp[:, 60-8:60 + 8, 60-8:60+8])
-            #print('bstamp', np.isnan(bstamp).sum())
 
             bstamp = bstamp.unsqueeze(1)
-            #return bstamp, bx, by, bmax_flux, bband
-            #return bstamp
-        
-            #print('bstamp', np.isnan(bstamp).sum())
             
             outputs_test = self.cnn(bstamp, bx, by, bmax_flux, bband)
             pred.append(std*outputs_test.squeeze() + mean)
             
-        print('dim', outputs_test.shape, torch.cat(pred).shape)
         pred = pd.Series(torch.cat(pred).detach().numpy(), \
                         index= ps_info.index)
         
