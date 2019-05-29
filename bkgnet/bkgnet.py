@@ -57,9 +57,6 @@ class BKGnet:
         L = []
         for i, (ind, sub) in enumerate(coord_pix.iterrows()):
             # Remember to make a copy of the array.
-            from IPython.core import debugger as ipdb
-            ipdb.set_trace()
-
             postage = img_pad[sub.x:sub.x+120, sub.y:sub.y+120].copy()
             postage = postage.astype(np.float32, copy = False)
             postage[60-8:60 + 8, 60-8:60+8] = np.nan
