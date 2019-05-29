@@ -30,11 +30,11 @@ def get_expnum(filename):
     
     return nr
 
-def load_cosmos():
+def load_cosmos(cosmos_path):
     """Load the cosmos catalogue."""
     
     # Selecting bright objects for a small test
-    cat = pd.read_table('cosmos.csv', delimiter = ',', \
+    cat = pd.read_table(cosmos_path, delimiter = ',', \
                         header = 0, comment = '#')
     
     cat = cat[cat.i_auto < 19]
