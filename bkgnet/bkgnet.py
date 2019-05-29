@@ -22,7 +22,7 @@ class BKGnet:
     
     # Here we estimate the background on CPUs. This should be much
     # simpler to integrate and sufficiently fast.
-    def __init__(self, model_path, batch_size=100):
+    def __init__(self, model_path, batch_size=50):
         
         # Load the model.
         cnn = network.CNN_model()
@@ -111,8 +111,10 @@ class BKGnet:
             # Removing the central region, as done in the training.
             bstamp[:, 60-8:60+8, 60-8:60+8] = 0
             bstamp = bstamp.unsqueeze(1)
-            
-            outputs_test = self.cnn(bstamp, bx, by, bmax_flux, bband)
+        
+            with torch.require_grad():    
+                outputs_test = self.cnn(bstamp, bx, by, bmax_flux, bband)
+
             pred.append(std*outputs_test.squeeze() + mean)
             
         pred = pd.Series(torch.cat(pred).detach().numpy(), \
