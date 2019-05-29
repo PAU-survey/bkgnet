@@ -1,3 +1,15 @@
+#!/usr/bin/env python
+# encoding: UTF8
+
+# Force the CPU version to only use one thread. Needed for running
+# at PIC, but also useful locally. There one can instead run multiple
+# jobs in parallell.
+
+import os
+os.environ["MKL_NUM_THREADS"] = "1" 
+os.environ["NUMEXPR_NUM_THREADS"] = "1" 
+os.environ["OMP_NUM_THREADS"] = "1" 
+
 import numpy as np
 import pandas as pd
 import torch
@@ -98,7 +110,6 @@ class BKGnet:
             
             # Removing the central region, as done in the training.
             bstamp[:, 60-8:60+8, 60-8:60+8] = 0
-
             bstamp = bstamp.unsqueeze(1)
             
             outputs_test = self.cnn(bstamp, bx, by, bmax_flux, bband)
