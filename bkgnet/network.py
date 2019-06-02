@@ -14,85 +14,35 @@ class CNN_model(nn.Module):
             nn.MaxPool2d(kernel_size=2, stride=2))
 
         self.layer2 = nn.Sequential(
-
             nn.Conv2d(32, 64, kernel_size=7, stride=1, padding = 3),
-
             nn.BatchNorm2d(64),
-
             nn.LeakyReLU(),
-
             nn.MaxPool2d(kernel_size=2, stride=2))
-
-            #nn.BatchNorm2d(64))
-
-
-
-
 
         self.layer3 = nn.Sequential(
-
             nn.Conv2d(64, 128, kernel_size=5, stride=1, padding = 2),
-
             nn.BatchNorm2d(128),
-
             nn.LeakyReLU(),
-
             nn.MaxPool2d(kernel_size=2, stride=2))
-
-            #nn.BatchNorm2d(128))
-
-
-
-
 
         self.layer4 = nn.Sequential(
-
             nn.Conv2d(128, 256, kernel_size=3, stride=1, padding = 1),
-
             nn.BatchNorm2d(256),
-
             nn.LeakyReLU(),
-
             nn.MaxPool2d(kernel_size=2, stride=2))
-
-            #nn.BatchNorm2d(256))
-
-
-
 
 
         self.layer5 = nn.Sequential(
-
             nn.Conv2d(256, 512, kernel_size=2, stride=1, padding = 0),
-
             nn.BatchNorm2d(512),
-
             nn.LeakyReLU(),
-
             nn.MaxPool2d(kernel_size=2, stride=2))
-
-            #nn.BatchNorm2d(512))
-
-
-
 
 
         self.fc1 = nn.Sequential(nn.BatchNorm1d(512*3*3+9),torch.nn.Linear(512*3*3+9, 1000), torch.nn.LeakyReLU(0.2))
-
-        #self.fc2 = nn.Sequential(nn.BatchNorm1d(3000),torch.nn.Linear(3000, 2000), torch.nn.LeakyReLU(0.2))    
-
-        #self.fc3 = nn.Sequential(nn.BatchNorm1d(2000),torch.nn.Linear(2000, 1000), torch.nn.LeakyReLU(0.2))
-
-        #self.fc4 = nn.Sequential(nn.BatchNorm1d(1000),torch.nn.Linear(1000, 1000), torch.nn.LeakyReLU(0.2))
-
         self.fc5 = nn.Sequential(nn.BatchNorm1d(1000),torch.nn.Linear(1000, 500), torch.nn.LeakyReLU(0.2))
-
         self.fc6 = nn.Sequential(nn.BatchNorm1d(500),torch.nn.Linear(500, 100), torch.nn.LeakyReLU(0.2))
-
-        #self.dp = nn.Dropout(0.2)
-
         self.fc7 = nn.Sequential(torch.nn.Linear(100, 2))
-
 
 
         self.embed = nn.Embedding(40, 5)
@@ -101,33 +51,16 @@ class CNN_model(nn.Module):
 
     def forward(self, x, coordx, coordy,max_values,band,stdv):
 
-
-
         out = self.layer1(x)
-
-        #print(out.shape)
 
         out = self.layer2(out)
 
-        #print(out.shape)
-
         out = self.layer3(out)
-
-        #print(out.shape)
 
         out = self.layer4(out)
 
-        #print(out.shape)
-
         out = self.layer5(out)
 
-        #print(out.shape)
-
-
-
-
-
-        #embedding of the coordinates of the ps in the CCD(coordx,coordy) and the max value of the ps (max_values)
 
         out = out.view(-1,512*3*3)
 
@@ -145,17 +78,9 @@ class CNN_model(nn.Module):
 
         out = self.fc1(out)
 
-        #out = self.fc2(out)
-
-        #out = self.fc3(out)
-
-        #out = self.fc4(out)
-
         out = self.fc5(out)
 
         out = self.fc6(out)
-
-        #out = self.dp(out)
 
         out = self.fc7(out)
 
