@@ -83,7 +83,7 @@ class BKGnet:
         x = torch.tensor(ps_info.x.values).unsqueeze(1)
         y = torch.tensor(ps_info.y.values).unsqueeze(1)
         max_flux = torch.tensor(ps_info.max_flux.values).unsqueeze(1)
-        band = torch.tensor(ps_info.band.values).unsqueeze(1)
+        band = torch.tensor(ps_info.band.values).unsqueeze(1).type(torch.long)
         dset = TensorDataset(postage_stamps, x, y, max_flux, band)
         
         return dset
@@ -109,14 +109,16 @@ class BKGnet:
             bstamp[:, 60-8:60+8, 60-8:60+8] = 0
             bstamp = bstamp.unsqueeze(1)
         
-            with torch.no_grad():    
-                outputs_test = self.cnn(bstamp, bx, by, bmax_flux, bband, std)
+            with torch.no_grad():
+                outputs = self.cnn(bstamp, bx, by, bmax_flux, bband, std)
 
-            pred.append(std*outputs_test.squeeze() + mean)
-            
-        pred = pd.Series(torch.cat(pred).detach().numpy(), \
-                        index= ps_info.index)
+            # The network gives the error in log(error)
+            outputs[:,1] = torch.exp(outputs[:,1]) 
+            pred.append(std[:,None]*outputs.squeeze() + mean[:,None])
         
+        pred = pd.DataFrame(torch.cat(pred).detach().numpy(), \
+                            index=ps_info.index, columns=['flux', 'flux_error'])
+
         return pred
 
     def background_img(self, img, coords_pix, band):
