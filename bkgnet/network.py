@@ -52,39 +52,35 @@ class CNN_model(nn.Module):
     def forward(self, x, coordx, coordy,max_values,band,stdv):
 
         out = self.layer1(x)
-
         out = self.layer2(out)
-
         out = self.layer3(out)
-
         out = self.layer4(out)
-
         out = self.layer5(out)
 
-
         out = out.view(-1,512*3*3)
-
         x2  = coordx
-
         x3 = coordy
-
         x4 = max_values
 
+        # Dimention mismatch...
+        band = band.squeeze(1)
         x5 = self.embed(band)
+        x6 = stdv.unsqueeze(1)
 
-        x6 = stdv
+
+        print(out.shape)
+        print('band', band.shape)
+        print('x2', x2.shape)
+        print('x3', x3.shape)
+        print('x4', x4.shape)
+        print('x5', x5.shape)
+        print('x6', x6.shape)
+#        print(x2.shape)
 
         out = torch.cat((out,x2,x3, x4, x5, x6), dim = 1)
-
         out = self.fc1(out)
-
         out = self.fc5(out)
-
         out = self.fc6(out)
-
         out = self.fc7(out)
-
-
-
 
         return out

@@ -117,7 +117,7 @@ class BKGnet:
             pred.append(std[:,None]*outputs.squeeze() + mean[:,None])
         
         pred = pd.DataFrame(torch.cat(pred).detach().numpy(), \
-                            index=ps_info.index, columns=['flux', 'flux_error'])
+                            index=ps_info.index, columns=['bkg', 'bkg_error'])
 
         return pred
 
