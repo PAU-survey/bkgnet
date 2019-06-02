@@ -87,5 +87,4 @@ class CNN_model(nn.Module):
 
 
 
-
         return out

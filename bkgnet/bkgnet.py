@@ -109,8 +109,8 @@ class BKGnet:
             bstamp[:, 60-8:60+8, 60-8:60+8] = 0
             bstamp = bstamp.unsqueeze(1)
         
-            with torch.require_grad():    
-                outputs_test = self.cnn(bstamp, bx, by, bmax_flux, bband)
+            with torch.no_grad():    
+                outputs_test = self.cnn(bstamp, bx, by, bmax_flux, bband, std)
 
             pred.append(std*outputs_test.squeeze() + mean)
             
