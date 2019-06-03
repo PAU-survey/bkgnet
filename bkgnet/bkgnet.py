@@ -34,16 +34,19 @@ class BKGnet:
    
     def _internal_naming(self, band):
         """Converting to internal band numbering."""
-        
-        # We plan to fix it later, but it requires retraining the network.
+       
+        # Convention based on how the bands are laid out in the trays.
         D = {'NB455': 1,'NB465': 2,'NB475': 3,'NB485': 4, 'NB495': 5, 'NB505': 6, 'NB515': 7, 'NB525': 8, \
              'NB535': 9, 'NB545': 10, 'NB555': 11, 'NB565': 12, 'NB575': 13, 'NB585': 14, 'NB595': 15, \
              'NB605': 16, 'NB615': 24, 'NB625': 23, 'NB635': 22, 'NB645': 21, 'NB655': 20, 'NB665': 19, \
              'NB675': 18, 'NB685': 17, 'NB695': 32, 'NB705': 31, 'NB715': 30, 'NB725': 29, 'NB735': 28, \
              'NB745': 27,'NB755': 26, 'NB765': 25, 'NB775': 40, 'NB785': 39, 'NB795': 38, 'NB805': 37, \
              'NB815': 36, 'NB825': 35, 'NB835': 34, 'NB845': 33}
-    
-        return D[band]
+
+        # Just to avoid changing the dictionary.
+        nr = D[band] - 1    
+
+        return nr
 
     def create_stamps(self, img, coord_pix):
         """Create the postage stamps from positions given in pixels."""
