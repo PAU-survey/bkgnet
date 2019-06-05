@@ -68,15 +68,6 @@ class CNN_model(nn.Module):
         x6 = stdv.unsqueeze(1)
 
 
-        print(out.shape)
-        print('band', band.shape)
-        print('x2', x2.shape)
-        print('x3', x3.shape)
-        print('x4', x4.shape)
-        print('x5', x5.shape)
-        print('x6', x6.shape)
-#        print(x2.shape)
-
         out = torch.cat((out,x2,x3, x4, x5, x6), dim = 1)
         out = self.fc1(out)
         out = self.fc5(out)
