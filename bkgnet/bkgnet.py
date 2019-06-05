@@ -116,8 +116,8 @@ class BKGnet:
                 outputs = self.cnn(bstamp, bx, by, bmax_flux, bband, std)
 
             # The network gives the error in log(error)
-            outputs[:,0] = std[:,None]*outputs[:,0] + mean[:,None]
-            outputs[:,1] = std[:,None]*torch.exp(outputs[:,1]) 
+            outputs[:,0] = std*outputs[:,0] + mean
+            outputs[:,1] = std*torch.exp(outputs[:,1]) 
             pred.append(outputs.squeeze())
         
         pred = pd.DataFrame(torch.cat(pred).detach().numpy(), \
