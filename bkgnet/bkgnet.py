@@ -118,7 +118,8 @@ class BKGnet:
             # The network gives the error in log(error)
             outputs[:,0] = std*outputs[:,0] + mean
             outputs[:,1] = std*torch.exp(outputs[:,1]) 
-            pred.append(outputs.squeeze())
+
+            pred.append(outputs) #.squeeze())
         
         pred = pd.DataFrame(torch.cat(pred).detach().numpy(), \
                             index=ps_info.index, columns=['bkg', 'bkg_error'])
