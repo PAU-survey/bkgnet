@@ -15,7 +15,8 @@ import pandas as pd
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 
-from . import network
+# To be changed when knowing if the new model performs better.
+from .new_network import CNN_model
 
 class BKGnet:
     """Interface for background prection using neural networks."""
@@ -25,7 +26,7 @@ class BKGnet:
     def __init__(self, model_path, batch_size=50):
         
         # Load the model.
-        cnn = network.CNN_model()
+        cnn = CNN_model()
         cnn.load_state_dict(torch.load(model_path, map_location='cpu'))
         cnn.eval()
        
@@ -85,9 +86,17 @@ class BKGnet:
         ps_info = ps_info.astype(np.float32, copy=False)
         x = torch.tensor(ps_info.x.values).unsqueeze(1)
         y = torch.tensor(ps_info.y.values).unsqueeze(1)
-        max_flux = torch.tensor(ps_info.max_flux.values).unsqueeze(1)
+        r50 = torch.tensor(ps_info.r50.values).unsqueeze(1)
+        I_auto = torch.tensor(ps_info.I_auto.values).unsqueeze(1)
+
         band = torch.tensor(ps_info.band.values).unsqueeze(1).type(torch.long)
-        dset = TensorDataset(postage_stamps, x, y, max_flux, band)
+        interv = torch.tensor(ps_info.interv.values).unsqueeze(1)
+        
+#        max_flux = torch.tensor(ps_info.max_flux.values).unsqueeze(1)
+        dset = TensorDataset(postage_stamps, x, y, r50, I_auto, band, interv)
+
+#        for bstamp, bx, by, br50, bIauto, bband, interv in loader:
+#        dset = TensorDataset(postage_stamps, x, y, max_flux, band)
         
         return dset
     
@@ -99,7 +108,8 @@ class BKGnet:
                             shuffle=False)
 
         pred = []
-        for bstamp, bx, by, bmax_flux, bband in loader:
+        #for bstamp, bx, by, bmax_flux, bband in loader:
+        for bstamp, bx, by, br50, bIauto, bband, interv in loader:
             # Normalizing postage-stamp by postage stamp.
             flat = bstamp.view(len(bstamp), -1)
             mean = torch.tensor(np.nanmean(flat, 1))
@@ -113,7 +123,8 @@ class BKGnet:
             bstamp = bstamp.unsqueeze(1)
         
             with torch.no_grad():
-                outputs = self.cnn(bstamp, bx, by, bmax_flux, bband, std)
+                outputs = self.cnn(bstamp, bx, by, br50, bIauto, bband, interv)
+                #outputs = self.cnn(bstamp, bx, by, bmax_flux, bband, std)
 
             # The network gives the error in log(error)
             outputs[:,0] = std*outputs[:,0] + mean
@@ -126,11 +137,14 @@ class BKGnet:
 
         return pred
 
-    def background_img(self, img, coords_pix, band):
+    def background_img(self, img, coords_pix, r50, I_auto, band, interv):
         """Predict background using BKGnet."""
 
         stamps, ps_info = self.create_stamps(img, coords_pix)
         ps_info['band'] = self._internal_naming(band)
+        ps_info['interv'] = interv
+        ps_info['r50'] = r50
+        ps_info['I_auto'] = I_auto
         pred = self._background_stamps(stamps, ps_info)
 
         return pred
