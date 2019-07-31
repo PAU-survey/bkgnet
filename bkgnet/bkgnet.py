@@ -23,31 +23,47 @@ class BKGnet:
     
     # Here we estimate the background on CPUs. This should be much
     # simpler to integrate and sufficiently fast.
-    def __init__(self, model_path, batch_size=50):
+    def __init__(self, model_path, batch_size=50, device='cuda'):
         
         # Load the model.
         cnn = CNN_model()
         cnn.load_state_dict(torch.load(model_path, map_location='cpu'))
         cnn.eval()
-       
+     
+        self.device = torch.device(device) 
+        cnn = cnn.to(self.device)
+ 
         self.batch_size = batch_size
         self.cnn = cnn
    
-    def _internal_naming(self, band):
-        """Converting to internal band numbering."""
-       
-        # Convention based on how the bands are laid out in the trays.
-        D = {'NB455': 1,'NB465': 2,'NB475': 3,'NB485': 4, 'NB495': 5, 'NB505': 6, 'NB515': 7, 'NB525': 8, \
-             'NB535': 9, 'NB545': 10, 'NB555': 11, 'NB565': 12, 'NB575': 13, 'NB585': 14, 'NB595': 15, \
-             'NB605': 16, 'NB615': 24, 'NB625': 23, 'NB635': 22, 'NB645': 21, 'NB655': 20, 'NB665': 19, \
-             'NB675': 18, 'NB685': 17, 'NB695': 32, 'NB705': 31, 'NB715': 30, 'NB725': 29, 'NB735': 28, \
-             'NB745': 27,'NB755': 26, 'NB765': 25, 'NB775': 40, 'NB785': 39, 'NB795': 38, 'NB805': 37, \
-             'NB815': 36, 'NB825': 35, 'NB835': 34, 'NB845': 33}
+#    def _internal_naming(self, band):
+#        """Converting to internal band numbering."""
+#       
+#        # Convention based on how the bands are laid out in the trays.
+#        D = {'NB455': 1,'NB465': 2,'NB475': 3,'NB485': 4, 'NB495': 5, 'NB505': 6, 'NB515': 7, 'NB525': 8, \
+#             'NB535': 9, 'NB545': 10, 'NB555': 11, 'NB565': 12, 'NB575': 13, 'NB585': 14, 'NB595': 15, \
+#             'NB605': 16, 'NB615': 24, 'NB625': 23, 'NB635': 22, 'NB645': 21, 'NB655': 20, 'NB665': 19, \
+#             'NB675': 18, 'NB685': 17, 'NB695': 32, 'NB705': 31, 'NB715': 30, 'NB725': 29, 'NB735': 28, \
+#             'NB745': 27,'NB755': 26, 'NB765': 25, 'NB775': 40, 'NB785': 39, 'NB795': 38, 'NB805': 37, \
+#             'NB815': 36, 'NB825': 35, 'NB835': 34, 'NB845': 33}
+#
+#        # Just to avoid changing the dictionary.
+#        nr = D[band] - 1    
+#
+#        return nr
 
-        # Just to avoid changing the dictionary.
-        nr = D[band] - 1    
+    def _internal_naming(self, band, interv):
+        """Sequential naming."""
 
-        return nr
+        # The bands are encoded as 0-39 before the intervention sorted in ascending wavelength 
+        # and 40-79 after the intervention, same order.
+        wl = float(band.replace('NB',''))   
+        ipdb.set_trace()
+
+        band_nr = int((wl - 455) / 10)
+        embed_nr = band_nr + 40*interv
+
+        return embed_nr
 
     def create_stamps(self, img, coord_pix):
         """Create the postage stamps from positions given in pixels."""
@@ -81,6 +97,7 @@ class BKGnet:
     def _asdataset(self, postage_stamps, ps_info):
         """Convert to a dataset."""
 
+        device = self.device
         postage_stamps = torch.tensor(postage_stamps)
                 
         ps_info = ps_info.astype(np.float32, copy=False)
@@ -92,7 +109,6 @@ class BKGnet:
         band = torch.tensor(ps_info.band.values).unsqueeze(1).type(torch.long)
         interv = torch.tensor(ps_info.interv.values).unsqueeze(1)
         
-#        max_flux = torch.tensor(ps_info.max_flux.values).unsqueeze(1)
         dset = TensorDataset(postage_stamps, x, y, r50, I_auto, band, interv)
 
 #        for bstamp, bx, by, br50, bIauto, bband, interv in loader:
@@ -121,12 +137,22 @@ class BKGnet:
             # Removing the central region, as done in the training.
             bstamp[:, 60-8:60+8, 60-8:60+8] = 0
             bstamp = bstamp.unsqueeze(1)
-        
+       
+            device = self.device 
             with torch.no_grad():
+                bstamp = bstamp.to(device)
+
+                bx = bx.to(device)
+                by = by.to(device)
+                br50 = br50.to(device)
+                bIauto = bIauto.to(device)
+                bband = bband.to(device)
+                interv = interv.to(device)
                 outputs = self.cnn(bstamp, bx, by, br50, bIauto, bband, interv)
                 #outputs = self.cnn(bstamp, bx, by, bmax_flux, bband, std)
 
             # The network gives the error in log(error)
+            outputs = outputs.cpu()
             outputs[:,0] = std*outputs[:,0] + mean
             outputs[:,1] = std*torch.exp(outputs[:,1]) 
 
@@ -141,7 +167,7 @@ class BKGnet:
         """Predict background using BKGnet."""
 
         stamps, ps_info = self.create_stamps(img, coords_pix)
-        ps_info['band'] = self._internal_naming(band)
+        ps_info['band'] = self._internal_naming(band, interv)
         ps_info['interv'] = interv
         ps_info['r50'] = r50
         ps_info['I_auto'] = I_auto
