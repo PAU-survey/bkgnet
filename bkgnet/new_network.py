@@ -38,12 +38,12 @@ class CNN_model(nn.Module):
             nn.LeakyReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2))
 
-        self.fc1 = nn.Sequential(nn.BatchNorm1d(512*3*3+10),torch.nn.Linear(512*3*3+10, 1000), torch.nn.LeakyReLU(0.2))
+        self.fc1 = nn.Sequential(nn.BatchNorm1d(512*3*3+13),torch.nn.Linear(512*3*3+13, 1000), torch.nn.LeakyReLU(0.2))
         self.fc5 = nn.Sequential(nn.BatchNorm1d(1000),torch.nn.Linear(1000, 500), torch.nn.LeakyReLU(0.2))
         self.fc6 = nn.Sequential(nn.BatchNorm1d(500),torch.nn.Linear(500, 100), torch.nn.LeakyReLU(0.2))
         self.fc7 = nn.Sequential(torch.nn.Linear(100, 2))
 
-        self.embed = nn.Embedding(40, 5)
+        self.embed = nn.Embedding(80, 10)
 
     def forward(self, ps, coordx, coordy, r50, Iauto, band, interv):
 
@@ -66,7 +66,7 @@ class CNN_model(nn.Module):
         x6 = Iauto
         x7 = interv
 
-        out = torch.cat((out,x2,x3, x4, x5, x6, x7), dim = 1)
+        out = torch.cat((out,x2,x3, x5, x6), dim = 1)
  
         out = self.fc1(out)
         out = self.fc5(out)
