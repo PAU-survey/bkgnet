@@ -1,9 +1,10 @@
+#!/usr/bin/env python
+# encoding: UTF8
+
 from IPython.core import debugger as ipdb
 import numpy as np
 import pandas as pd
-#import matplotlib.pyplot as plt
-#plt.switch_backend('agg')
-#import matplotlib.pyplot as plt
+
 from astropy.io import fits
 from astropy.io.fits.hdu.image import PrimaryHDU
 import random
@@ -19,11 +20,10 @@ import copy
 from sklearn.model_selection import train_test_split
 from math import sqrt
 import torch.nn.functional as F
-#from torch.autograd import Variable
-#import PS_generator
+
 from torch.utils.data.dataset import random_split
 from torch.utils.data import TensorDataset, DataLoader
-from new_network import CNN_model
+from network import CNN_model
 from astropy.modeling.functional_models import Sersic2D
 import re
 

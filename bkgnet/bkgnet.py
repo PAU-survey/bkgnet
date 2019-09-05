@@ -15,8 +15,7 @@ import pandas as pd
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 
-# To be changed when knowing if the new model performs better.
-from .new_network import CNN_model
+from .network import CNN_model
 
 class BKGnet:
     """Interface for background prection using neural networks."""
