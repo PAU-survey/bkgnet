@@ -45,7 +45,7 @@ class CNN_model(nn.Module):
 
         self.embed = nn.Embedding(80, 10)
 
-    def forward(self, ps, coordx, coordy, r50, Iauto, band, interv):
+    def forward(self, ps, coordx, coordy, Iauto, band):
 
         out = self.layer1(ps)
         out = self.layer2(out)
@@ -58,14 +58,11 @@ class CNN_model(nn.Module):
         out = out.view(-1,512*3*3)
         x2 = coordx
         x3 = coordy
-        x4 = r50 #max_values
- 
         # Dimention mismatch...
         band = band.squeeze(1)
         x5 = self.embed(band)
         x6 = Iauto
-        x7 = interv
-
+  
         out = torch.cat((out,x2,x3, x5, x6), dim = 1)
  
         out = self.fc1(out)
