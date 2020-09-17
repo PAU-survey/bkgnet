@@ -37,9 +37,9 @@ def load_cosmos(cosmos_path):
     cat = pd.read_table(cosmos_path, delimiter = ',', \
                         header = 0, comment = '#')
     
-    cat = cat[cat.i_auto < 19]
-    coords = cat[['paudm_id', 'ra', 'dec']]
-    coords = coords.rename(columns={'paudm_id': 'ref_id'})
+    cat = cat[cat.I_auto < 19]
+    coords = cat[['ref_id', 'ra', 'dec','I_auto','exp_num']]
+    #coords = coords.rename(columns={'paudm_id': 'ref_id'})
     coords = coords.set_index('ref_id')
     
     return coords
