@@ -37,6 +37,7 @@ class BKGnet:
   
     def _internal_naming(self, band, intervention):
         """Converting to internal band numbering."""
+
         band = band + '_' + str(intervention)
         # Convention based on how the bands are laid out in the trays.
         D = {'NB455_0': 1,'NB465_0': 2,'NB475_0': 3,'NB485_0': 4, 'NB495_0': 5, 'NB505_0': 6, 'NB515_0': 7, 'NB525_0': 8, \
@@ -71,7 +72,7 @@ class BKGnet:
         L = []
         for i, (ind, sub) in enumerate(coord_pix.iterrows()):
             # Remember to make a copy of the array.
-            postage = img_pad[sub.x:sub.x+120, sub.y:sub.y+120].copy()
+            postage = img_pad[int(sub.x):int(sub.x+120), int(sub.y):int(sub.y+120)].copy()
             postage = postage.astype(np.float32, copy = False)
             postage[60-8:60 + 8, 60-8:60+8] = np.nan
             postages[i] = postage
@@ -96,14 +97,13 @@ class BKGnet:
         ps_info = ps_info.astype(np.float32, copy=False)
         x = torch.tensor(ps_info.x.values).unsqueeze(1)
         y = torch.tensor(ps_info.y.values).unsqueeze(1)
-        r50 = torch.tensor(ps_info.r50.values).unsqueeze(1)
+        #r50 = torch.tensor(ps_info.r50.values).unsqueeze(1)
         I_auto = torch.tensor(ps_info.I_auto.values).unsqueeze(1)
 
         band = torch.tensor(ps_info.band.values).unsqueeze(1).type(torch.long)
-        interv = torch.tensor(ps_info.interv.values).unsqueeze(1)
         
 #        max_flux = torch.tensor(ps_info.max_flux.values).unsqueeze(1)
-        dset = TensorDataset(postage_stamps, x, y, r50, I_auto, band, interv)
+        dset = TensorDataset(postage_stamps, x, y, I_auto, band)
 
 #        for bstamp, bx, by, br50, bIauto, bband, interv in loader:
 #        dset = TensorDataset(postage_stamps, x, y, max_flux, band)
@@ -119,7 +119,7 @@ class BKGnet:
 
         pred = []
         #for bstamp, bx, by, bmax_flux, bband in loader:
-        for bstamp, bx, by, br50, bIauto, bband  in loader:
+        for bstamp, bx, by, bIauto, bband  in loader:
             # Normalizing postage-stamp by postage stamp.
             flat = bstamp.view(len(bstamp), -1)
             mean = torch.tensor(np.nanmean(flat, 1))
@@ -133,7 +133,7 @@ class BKGnet:
             bstamp = bstamp.unsqueeze(1)
         
             with torch.no_grad():
-                outputs = self.cnn(bstamp, bx, by, br50, bIauto, bband)
+                outputs = self.cnn(bstamp, bx, by, bIauto, bband)
                 #outputs = self.cnn(bstamp, bx, by, bmax_flux, bband, std)
 
             # The network gives the error in log(error)
@@ -152,13 +152,15 @@ class BKGnet:
         """Predict background using BKGnet."""
 
         stamps, ps_info = self.create_stamps(img, coords_pix)
+                
         if exp_num >= 7582:
-            interv = 1
+            
+            interv = '1'
           
         if exp_num < 7582:
-            interv = 0
+            interv = '0'
          
-        ps_info['band'] = self._internal_naming(ps_info.band, interv) 
+        ps_info['band'] = self._internal_naming(band, interv) 
         ps_info['I_auto'] = I_auto
         pred = self._background_stamps(stamps, ps_info)
 
