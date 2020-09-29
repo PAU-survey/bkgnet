@@ -1,5 +1,20 @@
+# Copyright (C) 2019 Laura Cabayol, Martin B. Eriksen
+# This file is part of BKGnet <https://github.com/PAU-survey/bkgnet>.
+#
+# BKGnet is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# BKGnet is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with BKGnet.  If not, see <http://www.gnu.org/licenses/>.
 #!/usr/bin/env python
- 
+    
 import torch
 from torch import nn
 
@@ -45,7 +60,7 @@ class CNN_model(nn.Module):
 
         self.embed = nn.Embedding(80, 10)
 
-    def forward(self, ps, coordx, coordy, r50, Iauto, band):
+    def forward(self, ps, coordx, coordy, Iauto, band):
 
         out = self.layer1(ps)
         out = self.layer2(out)
