@@ -37,7 +37,7 @@ def load_cosmos(cosmos_path):
     cat = pd.read_table(cosmos_path, delimiter = ',', \
                         header = 0, comment = '#')
     
-    cat = cat[cat.I_auto < 19]
+    #cat = cat[cat.I_auto < 19]
     coords = cat[['ref_id', 'ra', 'dec','I_auto','exp_num']]
     #coords = coords.rename(columns={'paudm_id': 'ref_id'})
     coords = coords.set_index('ref_id')
@@ -53,6 +53,7 @@ def get_pixelpos(coords, header):
     footprint = w.calc_footprint(header)
     coords_inside = coords[(coords.ra>np.amin(footprint[:,0]))&(coords.ra<np.amax(footprint[:,0]))&\
                           (coords.dec>np.amin(footprint[:,1]))&(coords.dec<np.amax(footprint[:,1]))]
+    
         
     pix_coords = w.wcs_world2pix(coords_inside.loc[:, ['ra','dec']],0)
     
