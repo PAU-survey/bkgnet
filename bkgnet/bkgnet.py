@@ -49,6 +49,7 @@ class BKGnet:
    
     def _internal_naming(self, band, intervention):
         """Converting to internal band numbering."""
+
         band = band + '_' + str(intervention)
         # Convention based on how the bands are laid out in the trays.
         D = {'NB455_0': 1,'NB465_0': 2,'NB475_0': 3,'NB485_0': 4, 'NB495_0': 5, 'NB505_0': 6, 'NB515_0': 7, 'NB525_0': 8, \
@@ -57,17 +58,19 @@ class BKGnet:
              'NB675_0': 18, 'NB685_0': 17, 'NB695_0': 32, 'NB705_0': 31, 'NB715_0': 30, 'NB725_0': 29, 'NB735_0': 28, \
              'NB745_0': 27,'NB755_0': 26, 'NB765_0': 25, 'NB775_0': 40, 'NB785_0': 39, 'NB795_0': 38, 'NB805_0': 37, \
              'NB815_0': 36, 'NB825_0': 35, 'NB835_0': 34, 'NB845_0': 33, \
-             'NB455_0': 41,'NB465_0': 42,'NB475_0': 43,'NB485_0': 44, 'NB495_0': 45, 'NB505_0': 46, 'NB515_0': 47, 'NB525_0': 48, \
-             'NB535_0': 49, 'NB545_0': 50, 'NB555_0': 51, 'NB565_0': 52, 'NB575_0': 53, 'NB585_0': 54, 'NB595_0': 55, \
-             'NB605_0': 56, 'NB615_0': 64, 'NB625_0': 63, 'NB635_0': 62, 'NB645_0': 61, 'NB655_0': 60, 'NB660_0': 59, \
-             'NB675_0': 58, 'NB685_0': 57, 'NB695_0': 72, 'NB705_0': 71, 'NB715_0': 70, 'NB725_0': 69, 'NB735_0': 68, \
-             'NB745_0': 67,'NB755_0': 66, 'NB765_0': 65, 'NB775_0': 80, 'NB785_0': 79, 'NB795_0': 78, 'NB805_0': 77, \
-             'NB815_0': 76, 'NB825_0': 75, 'NB835_0': 74, 'NB845_0': 73}
+             'NB455_1': 41,'NB465_1': 42,'NB475_1': 43,'NB485_1': 44, 'NB495_1': 45, 'NB505_1': 46, 'NB515_1': 47, 'NB525_1': 48, \
+             'NB535_1': 49, 'NB545_1': 50, 'NB555_1': 51, 'NB565_1': 52, 'NB575_1': 53, 'NB585_1': 54, 'NB595_1': 55, \
+             'NB605_1': 56, 'NB615_1': 64, 'NB625_1': 63, 'NB635_1': 62, 'NB645_1': 61, 'NB655_1': 60, 'NB660_1': 59, \
+             'NB675_1': 58, 'NB685_1': 57, 'NB695_1': 72, 'NB705_1': 71, 'NB715_1': 70, 'NB725_1': 69, 'NB735_1': 68, \
+             'NB745_1': 67,'NB755_1': 66, 'NB765_1': 65, 'NB775_1': 80, 'NB785_1': 79, 'NB795_1': 78, 'NB805_1': 77, \
+             'NB815_1': 76, 'NB825_1': 75, 'NB835_1': 74, 'NB845_1': 73}
 
         # Just to avoid changing the dictionary.
         nr = D[band] - 1    
 
         return nr
+
+
 
     def create_stamps(self, img, coord_pix):
         """Create the postage stamps from positions given in pixels."""
@@ -81,7 +84,7 @@ class BKGnet:
         L = []
         for i, (ind, sub) in enumerate(coord_pix.iterrows()):
             # Remember to make a copy of the array.
-            postage = img_pad[sub.x:sub.x+120, sub.y:sub.y+120].copy()
+            postage = img_pad[int(sub.x):int(sub.x+120), int(sub.y):int(sub.y+120)].copy()
             postage = postage.astype(np.float32, copy = False)
             postage[60-8:60 + 8, 60-8:60+8] = np.nan
             postages[i] = postage
@@ -138,7 +141,7 @@ class BKGnet:
             bstamp = bstamp.unsqueeze(1)
         
             with torch.no_grad():
-                outputs = self.cnn(bstamp, bx, by, br50, bIauto, bband, interv)
+                outputs = self.cnn(bstamp, bx, by, bIauto, bband)
                 #outputs = self.cnn(bstamp, bx, by, bmax_flux, bband, std)
 
             # The network gives the error in log(error)
@@ -152,16 +155,16 @@ class BKGnet:
 
         return pred
 
-    def background_img(self, img, coords_pix, I_auto, band):
+    def background_img(self, img, coords_pix, I_auto, band,exp_num):
         """Predict background using BKGnet."""
 
         stamps, ps_info = self.create_stamps(img, coords_pix)
-        if ps_info.exp_num >= 7582:
-            interv = 1
-        if ps_info.exp_num < 7582:
-            interv = 0
-        ps_info['band'] = self._internal_naming(ps_info.band, interv) 
+    
+        interv = '1' if exp_num >= 7582 else '0'            
+         
+        ps_info['band'] = self._internal_naming(band, interv) 
         ps_info['I_auto'] = I_auto
         pred = self._background_stamps(stamps, ps_info)
 
         return pred
+
