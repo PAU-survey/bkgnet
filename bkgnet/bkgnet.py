@@ -1,3 +1,18 @@
+# Copyright (C) 2019 Laura Cabayol, Martin B. Eriksen
+# This file is part of BKGnet <https://github.com/PAU-survey/bkgnet>.
+#
+# BKGnet is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# BKGnet is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with BKGnet.  If not, see <http://www.gnu.org/licenses/>.
 #!/usr/bin/env python
 # encoding: UTF8
 
@@ -15,8 +30,7 @@ import pandas as pd
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 
-# To be changed when knowing if the new model performs better.
-from .new_network import CNN_model
+from .network import CNN_model
 
 class BKGnet:
     """Interface for background prection using neural networks."""
@@ -33,8 +47,6 @@ class BKGnet:
         self.batch_size = batch_size
         self.cnn = cnn
    
-   
-  
     def _internal_naming(self, band, intervention):
         """Converting to internal band numbering."""
 
@@ -78,7 +90,7 @@ class BKGnet:
             postages[i] = postage
 
             S = pd.Series()
-            S['max_flux'] = np.nanmax(postage)
+          
             L.append(S)
             
             
@@ -96,30 +108,26 @@ class BKGnet:
                 
         ps_info = ps_info.astype(np.float32, copy=False)
         x = torch.tensor(ps_info.x.values).unsqueeze(1)
-        y = torch.tensor(ps_info.y.values).unsqueeze(1)
-        #r50 = torch.tensor(ps_info.r50.values).unsqueeze(1)
+        y = torch.tensor(ps_info.y.values).unsqueeze(1) 
         I_auto = torch.tensor(ps_info.I_auto.values).unsqueeze(1)
+     
 
         band = torch.tensor(ps_info.band.values).unsqueeze(1).type(torch.long)
-        
-#        max_flux = torch.tensor(ps_info.max_flux.values).unsqueeze(1)
         dset = TensorDataset(postage_stamps, x, y, I_auto, band)
 
-#        for bstamp, bx, by, br50, bIauto, bband, interv in loader:
-#        dset = TensorDataset(postage_stamps, x, y, max_flux, band)
         
         return dset
     
     def _background_stamps(self, postage_stamps, ps_info):
         """Determine the bakground for the postage stamps."""
         
-        dset = self._asdataset(postage_stamps, ps_info)
+        dset  = self._asdataset(postage_stamps, ps_info)
         loader = DataLoader(dset, batch_size=self.batch_size, \
                             shuffle=False)
 
         pred = []
         #for bstamp, bx, by, bmax_flux, bband in loader:
-        for bstamp, bx, by, bIauto, bband  in loader:
+        for bstamp, bx, by, bIauto, bband in loader:
             # Normalizing postage-stamp by postage stamp.
             flat = bstamp.view(len(bstamp), -1)
             mean = torch.tensor(np.nanmean(flat, 1))
@@ -147,18 +155,12 @@ class BKGnet:
 
         return pred
 
-   
     def background_img(self, img, coords_pix, I_auto, band,exp_num):
         """Predict background using BKGnet."""
 
         stamps, ps_info = self.create_stamps(img, coords_pix)
-                
-        if exp_num >= 7582:
-            
-            interv = '1'
-          
-        if exp_num < 7582:
-            interv = '0'
+    
+        interv = '1' if exp_num >= 7582 else '0'            
          
         ps_info['band'] = self._internal_naming(band, interv) 
         ps_info['I_auto'] = I_auto
