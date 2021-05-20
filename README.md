@@ -10,6 +10,11 @@ This can be given directly or use the header and a list of target objects with R
 libexample.py deals with the header and RA,DEC but if the coordinates are already given 
 to the network, this extra step is no longer needed.
 
+# Acknowledgement
+This project has received funding from the European Union’s Horizon 2020 research
+and innovation programme under the grant agreement No
+776247 EWC.
+
 
 
 
